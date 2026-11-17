@@ -1,14 +1,5 @@
 # Regional carbon flows in a coupled energy and industry system
 
-Code accompanying:
-
-**Reserving carbon storage for unavoidable emissions replaces fossil fuels
-with carbon cycles in climate-neutral scenarios**
-
-[Authors]  
-[Paper DOI or manuscript link]  
-[Zenodo DOI]
-
 ## Overview
 
 This repository extends networks prepared with PyPSA-Eur with a regional
