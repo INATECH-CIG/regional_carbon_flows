@@ -184,15 +184,6 @@ be aligned with the downloaded files or the output location in `main.py`.
 
 Existing solved networks can be analysed without rerunning optimisation.
 
-## Citation
-
-Please cite the associated paper and the specific Zenodo release used:
-
-[Authors]. [Year]. Regional carbon flows: code and model results.
-Version [version]. Zenodo. [DOI].
-
-Please also acknowledge PyPSA, PyPSA-Eur and the input datasets used.
-See the paper and source-data documentation for references.
 
 ## Licence and attribution
 
