@@ -1,55 +1,49 @@
 # Regional carbon flows in a coupled energy and industry system
 
-## Overview
+This repository contains code for building, solving and analysing a
+European energy and industry model based on PyPSA-Eur.
 
-This repository extends networks prepared with PyPSA-Eur with a regional
-representation of German industry and carbon flows.
+The code adds regional industrial production in Germany, refinery
+locations and carbon flows to prepared PyPSA-Eur networks. Production
+routes for steel, cement and high-value chemicals are optimised together
+with energy supply, CO2 transport and geological storage.
 
-The model couples the European energy system with industrial production,
-refineries, carbon capture, carbon utilisation, CO2 transport and geological
-storage. German steel, cement and high-value chemical production routes
-are represented endogenously. Other industrial demands are supplied through
-exogenous feedstock, electricity and process-heat requirements.
+Two reference scenarios use European CO2 storage limits of 120 and
+1,500 Mt CO2 per year. Further scenarios vary biomass availability,
+fossil fuel prices and direct air capture costs.
 
-The study compares two climate-neutral cases:
-
-- **Conditional:** a European CO2 sequestration limit of 120 Mt CO2/year,
-  representing storage availability at the level of unavoidable emissions.
-- **Technology-open:** a European CO2 sequestration limit of
-  1,500 Mt CO2/year.
-
-Sensitivity scenarios vary biomass availability, fossil fuel prices and
-direct-air-capture investment costs.
-
-The storage limit is implemented as an aggregate European constraint.
-See the paper for the interpretation and limitations of the scenarios.
+Run `scripts/main.py` to build a network and optionally solve it.
+The notebooks in `analysis scripts/` analyse the saved results.
 
 ## Repository contents
 
-| Folder or file | Contents |
+| File or folder | Purpose |
 |---|---|
-| `scripts/main.py` | Scenario settings and the build–solve–export workflow. |
-| `scripts/build_coupled_network.py` | Loads a base network and adds the coupled industry and carbon-flow representation. |
+| `scripts/main.py` | Scenario settings, paths, and calls to build, solve and export the network. |
+| `scripts/build_coupled_network.py` | Adds industry, refineries and carbon flows to a prepared PyPSA-Eur network. |
 | `scripts/solve_coupled_network.py` | Applies scenario costs and pipeline restrictions, adds constraints and solves the network. |
-| `scripts/Industry_input.py` | Reads and prepares industrial technology, feedstock and cost assumptions. |
-| `scripts/Industry_model.py` | Industrial processes, regional demand allocation and supporting functions. |
-| `scripts/pre-processing/` | Preparation of industrial energy-intensity tables. |
-| `analysis scripts/` | Analysis notebooks and plotting functions. |
-| `analysis scripts/plots_paper.ipynb` | Analysis and figures for the main scenarios. |
+| `scripts/Industry_input.py` | Reads industrial technology, feedstock and cost parameters. |
+| `scripts/Industry_model.py` | Defines industrial processes and assigns industrial demand to network nodes. |
+| `scripts/pre-processing/` | Scripts for preparing industrial energy-intensity tables. |
+| `analysis scripts/plots_paper.ipynb` | Analysis and figures for the reference scenarios. |
 | `analysis scripts/sensitivities.ipynb` | Analysis of sensitivity scenarios. |
-| `analysis scripts/plots/` | Figure output directory. |
+| `analysis scripts/` | Supporting functions for maps, costs, energy balances and carbon flows. |
+| `analysis scripts/plots/` | Directory for exported figures. |
 
-The GitHub repository contains the code and documentation. Input data and
-network files are distributed separately through the associated Zenodo
-record, subject to their original licences.
+The code starts from prepared PyPSA-Eur networks. It does not run the
+upstream workflow that generates these base networks.
 
-## Data and network folders
+## Input data and folder structure
 
-After downloading the data, arrange the folders as follows:
+Code alone is not sufficient to build the model. The industry input
+tables, geographic data and base networks are also required.
+
+Arrange the files as follows:
 
 ```text
 working-directory/
 ├── regional_carbon_flows/
+│   ├── README.md
 │   ├── scripts/
 │   ├── analysis scripts/
 │   ├── data/
@@ -62,135 +56,228 @@ working-directory/
 └── post-networks-regional/
 ```
 
-- `data/raw/`: industrial assumptions and source workbooks.
-- `data/plant_data/`: industrial plant information and geographic data.
-- `data/pypsa-eur/`: technology costs, industrial production and spatial
-  allocation tables.
-- `pre-networks-regional/`: input networks prepared with PyPSA-Eur.
-- `post-networks-unsolved/`: coupled networks exported before scenario
-  adjustments and optimisation.
-- `post-networks-regional/`: solved networks, stored beside the repository.
+| Folder | Contents |
+|---|---|
+| `data/raw/` | Industrial assumptions and source workbooks. |
+| `data/plant_data/` | Industrial production and location data, including AIDRES and geographic boundaries. |
+| `data/pypsa-eur/` | Technology costs, industrial production and spatial allocation tables. |
+| `pre-networks-regional/` | Base networks prepared with PyPSA-Eur. |
+| `post-networks-unsolved/` | Built networks before scenario cost adjustments and optimisation. |
+| `post-networks-regional/` | Solved networks. This folder is outside the repository, at the same directory level. |
 
-Keep the complete shapefile bundles, including their supporting files.
+Preserve the filenames and subdirectories of the input data. Shapefiles
+must include their supporting files, such as `.dbf`, `.shx` and `.prj`.
 
-The default input networks are:
+The default base networks are:
 
 ```text
-Low: base_s_adm__Low_6H-T-H-B-I-A_2050.nc
-Med: base_s_adm__6H-T-H-B-I-A_2050.nc
+Low biomass:
+base_s_adm__Low_6H-T-H-B-I-A_2050.nc
+
+Medium biomass:
+base_s_adm__6H-T-H-B-I-A_2050.nc
 ```
 
-This repository starts from these prepared networks. It does not run the
-complete upstream PyPSA-Eur workflow.
+The biomass scenario is selected through the corresponding base network.
 
 ## Software requirements
 
-The workflow uses Python, PyPSA, pandas, NumPy, Linopy, GeoPandas,
-Shapely, a GeoPandas file-reading backend, openpyxl and a NetCDF backend.
+The build and solve scripts use:
 
-The analysis additionally uses Matplotlib, Cartopy, Plotly and Jupyter.
+- Python
+- PyPSA and Linopy
+- pandas and NumPy
+- GeoPandas and its geographic file-reading dependencies
+- openpyxl
+- A NetCDF backend, such as netCDF4
 
-Optimisation is configured for Gurobi and requires a working Gurobi
-installation and licence. Building the unsolved network does not require
-running the solver.
+The analysis scripts additionally use Matplotlib, Cartopy, Plotly and
+Jupyter.
 
-Release environment and installation instructions:
-[Add the environment file and its installation command.]
+Optimisation is configured for Gurobi and requires a working installation
+and licence. Building and saving an unsolved network does not run the
+solver.
 
-Use the software versions archived with the release when reproducing
-the paper. Runtime and memory requirements depend on the scenario and
-computing environment.
+The local development environment uses Python 3.13 and PyPSA 1.2.4.
+These versions do not constitute a complete dependency specification.
+A reproducible environment file is not yet included.
 
 ## Running the model
 
-1. Install and activate the release environment.
-2. Download and extract the input data and base networks into the folder
-   structure shown above.
-3. Edit the user settings in `scripts/main.py`.
-4. From the repository root, run:
+Activate a Python environment containing the required packages and
+place the input data and base networks in the directories shown above.
+
+Edit the settings at the beginning of `scripts/main.py`, then run this
+command from the repository root:
 
 ```bash
 python scripts/main.py
 ```
 
-The script sets its working directory to `scripts/` because the industry
-helpers use relative data paths.
+The script changes its working directory to `scripts/` because the
+industry functions read data through relative paths.
 
-### Build only
+Each run builds one selected scenario. The unsolved network is always
+saved.
+
+### Build without solving
+
+Set:
 
 ```python
 solve_network = False
 ```
 
-The coupled network is always saved to `post-networks-unsolved/`.
+The script builds the coupled network and saves it in
+`post-networks-unsolved/`.
+
+This is the current default.
 
 ### Build and solve
+
+Set:
 
 ```python
 solve_network = True
 ```
 
-The script first saves the unsolved network, then applies the scenario
-settings, solves it and exports the solved network.
+The script:
 
-Each execution processes one selected scenario.
+1. Builds the coupled network.
+2. Saves the unsolved network.
+3. Applies scenario costs and pipeline restrictions.
+4. Solves the optimisation problem.
+5. Exports the solved network after the solver reports an optimal solution.
+
+The unsolved file is saved before the scenario cost changes and pipeline
+restrictions are applied.
 
 ## Scenario settings
 
+The main settings are defined in `scripts/main.py`.
+
 | Setting | Meaning |
 |---|---|
-| `bioscenario` | `"Low"` or `"Med"` biomass availability, selected through the base network. |
-| `ccslimit` | European geological CO2 storage limit in Mt CO2/year. |
+| `bioscenario` | `"Low"` or `"Med"` biomass availability. |
+| `ccslimit` | Annual European geological CO2 storage limit, in Mt CO2/year. |
+| `solve_network` | Whether to solve the network after building it. |
 | `gas_price_factor` | Multiplier on reference fossil gas supply costs. |
 | `oil_price_factor` | Multiplier on reference primary oil supply costs. |
-| `dac_cost_factor` | Multiplier on DAC capital costs. |
-| `use_2022_prices` | Uses the configured absolute 2022 fuel prices instead of fuel-price factors. |
-| `co2_cap` | CO2 budget in tonnes CO2/year; zero for the climate-neutral cases. |
-| `ccsmc` | CO2 sequestration operating cost in EUR/t CO2. |
+| `dac_cost_factor` | Multiplier on direct air capture capital costs. |
+| `use_2022_prices` | Uses the configured absolute 2022 fuel prices instead of price factors. |
+| `gas_price_2022` | Absolute fossil gas price used when `use_2022_prices = True`, in EUR/MWh. |
+| `oil_price_2022` | Absolute primary oil price used when `use_2022_prices = True`, in EUR/MWh. |
+| `co2_cap` | CO2 budget passed to the emission constraints, in tonnes CO2/year. |
+| `ccsmc` | Geological CO2 sequestration operating cost, in EUR/t CO2. |
+| `remove_new_gas_pipelines` | Removes links with the carrier `gas pipeline new`. |
+| `remove_retrofit_pipelines` | Removes links whose carrier or name contains `retrofit`. |
 
-The reference scenario uses Low biomass availability and all cost factors
-equal to one. Set `ccslimit = 120` for the conditional case and
-`ccslimit = 1500` for the technology-open case.
+The reference settings use low biomass availability and cost factors
+equal to one.
 
-With `use_2022_prices = True`, investment and dispatch are optimised under
-those prices. This is different from applying a price shock retrospectively
-to the unchanged fuel consumption of an already optimised system.
+Set:
 
-## Outputs and analysis
+```python
+ccslimit = 120
+```
 
-Networks are saved as PyPSA NetCDF files (`.nc`).
+for the conditional case, or:
 
-The reference solved filenames are:
+```python
+ccslimit = 1500
+```
+
+for the technology-open case.
+
+These limits apply to total European geological storage. The conditional
+case does not restrict storage eligibility by emission source.
+
+When `use_2022_prices = True`, leave both fuel-price factors at `1.0`.
+The solver then optimises investment and operation under the absolute
+2022 prices. This differs from applying higher prices to the unchanged
+fuel consumption of an already solved network.
+
+The current filename logic treats fuel-price sensitivities and DAC-cost
+sensitivities separately. Combined changes require an adjusted naming
+convention.
+
+## Saved networks
+
+Networks are exported as PyPSA NetCDF files (`.nc`).
+
+For low biomass availability, the unsolved network is named:
+
+```text
+biopot_ENS_Low_industry_regional_refineries.nc
+```
+
+The reference solved networks are named:
 
 ```text
 biopot_ENS_Low_industry_regional_refineries_120_solved.nc
 biopot_ENS_Low_industry_regional_refineries_1500_solved.nc
 ```
 
-Sensitivity results are placed in `bio_med/`, `dac2/` and `fossil_price/`
-under the solved-network directory.
+Sensitivity results are saved in subdirectories of
+`post-networks-regional/`:
 
-Running the same scenario again uses the same output filename.
+| Subdirectory | Scenario |
+|---|---|
+| `bio_med/` | Medium biomass availability. |
+| `dac2/` | Doubled direct air capture capital costs. |
+| `fossil_price/` | Changed fossil fuel prices, including the 2022-price scenarios. |
 
-To analyse existing results, open the notebooks in `analysis scripts/`.
-When running them from that directory, set their network path to:
+Other DAC cost factors produce correspondingly named folders.
+
+Running the same scenario again writes to the same output filename.
+The unsolved filename depends on the biomass scenario, not on the
+storage limit or price factors.
+
+## Analysing existing results
+
+Existing solved networks can be analysed without repeating the
+optimisation.
+
+Open the notebooks in `analysis scripts/` and run them with that folder
+as the working directory. Set their network path to:
 
 ```python
 path = "../../post-networks-regional/"
 ```
 
-The notebooks currently contain a `post-networks-solved` path, which must
-be aligned with the downloaded files or the output location in `main.py`.
+Check this setting before running: the notebooks may still contain
+the older folder name `post-networks-solved`.
 
-Existing solved networks can be analysed without rerunning optimisation.
+To load a solved network directly from a notebook in that directory:
 
+```python
+import pypsa
 
-## Licence and attribution
+n = pypsa.Network(
+    "../../post-networks-regional/"
+    "biopot_ENS_Low_industry_regional_refineries_120_solved.nc"
+)
+```
 
-Original code contributed to this project is licensed under the MIT
-License; see `LICENSE`.
+The network contains component parameters, optimised capacities and
+operational time series. The plotting scripts use these results to
+calculate costs, energy balances and carbon flows.
 
-Original documentation and author-generated result material are licensed
-under CC BY 4.0, except where otherwise indicated.
+## Licence
 
-Reused code, input datasets and material embedded
+Original code contributed to this project is licensed under the
+MIT License.
+
+Original documentation and author-generated results are licensed under
+Creative Commons Attribution 4.0 International (CC BY 4.0), except where
+otherwise indicated.
+
+Reused code and third-party input data retain their original licences.
+The licences for this project do not replace the terms applying to
+those materials. Preserve the relevant copyright and licence notices
+when redistributing them.
+
+Licence texts:
+
+- MIT: https://opensource.org/license/mit
+- CC BY 4.0: https://creativecommons.org/licenses/by/4.0/
